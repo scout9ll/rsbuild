@@ -122,8 +122,12 @@ export class SocketServer {
       }
     });
 
-    if (this.options.hmr || this.options.liveReload) {
+    if (this.options.hmr) {
       this.singleWrite(connection, 'hot');
+    }
+
+    if (this.options.liveReload) {
+      this.singleWrite(connection, 'liveReload');
     }
 
     // send first stats to active client sock if stats exist

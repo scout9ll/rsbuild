@@ -15,6 +15,9 @@ const socketUrl = createSocketUrl(options);
 
 const enableOverlay = !!options.overlay;
 
+// Disable liveReload by default on client
+let enableLiveReload = false;
+
 // Remember some state related to hot module replacement.
 let isFirstCompilation = true;
 let mostRecentCompilationHash: string | null = null;
@@ -164,10 +167,16 @@ function tryApplyUpdates() {
         typeof console !== 'undefined' &&
         typeof console.error === 'function'
       ) {
-        console.error('[HMR] Forced reload caused by: ', err);
+        console.error(
+          `[HMR] ${enableLiveReload ? 'Forced reload' : 'Failed'} caused by: `,
+          err,
+        );
+      }
+      // When HMR error occurs, forced reload only if liveReload is enabled.
+      if (!err || enableLiveReload) {
+        window.location.reload();
       }
 
-      window.location.reload();
       return;
     }
 
@@ -207,6 +216,9 @@ function onMessage(e: MessageEvent<string>) {
         clearOverlay?.();
       }
       handleAvailableHash(message.data);
+      break;
+    case 'liveReload':
+      enableLiveReload = true;
       break;
     case 'still-ok':
     case 'ok':
